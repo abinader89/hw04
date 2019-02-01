@@ -47,25 +47,29 @@ function MakeTiles(list)
     var tile15 = new Tile(false, false, 'g');
     var tile16 = new Tile(false, false, 'h');
 
-    list.push(tile1);
-    list.push(tile2);
-    list.push(tile3);
-    list.push(tile4);
-    list.push(tile5);
-    list.push(tile6);
-    list.push(tile7);
     list.push(tile8);
+    list.push(tile5);
+    list.push(tile2);
+    list.push(tile12);
+    list.push(tile7);
+    list.push(tile3);
+    list.push(tile16);
     list.push(tile9);
+    list.push(tile1);
+    list.push(tile4);
+    list.push(tile15);
+    list.push(tile6);
     list.push(tile10);
     list.push(tile11);
-    list.push(tile12);
     list.push(tile13);
-    list.push(tile14);
-    list.push(tile15);
-    list.push(tile16);
-
+    list.push(tile12);
 
     return list;
+}
+
+// trivial one-liner to shuffle array
+function shuffle_array(arr) {
+    _.shuffle(arr);
 }
 
 // App state for Memory Game is:
@@ -79,7 +83,13 @@ class MemoryGame extends React.Component {
         super(props);
         var list = [];
         MakeTiles(list);
+        shuffle_array(list);
+        for (var ii in list)
+        {
+            console.log(list[ii].value.toString());
+        }
         this.state = {tiles: list, tile_revealed: null, clicks: 0};
+        this.flip_back=this.flip_back.bind(this);
     }
 
     // refresh the page with confirmation
@@ -95,12 +105,7 @@ class MemoryGame extends React.Component {
     // on the clicked element on the web page
     get_index(e) {
         var index;
-        // clicked on the tile
-        if (!(index = e.target.parentElement.parentElement.id))
-        {
-            // clicked on button
-            index = e.target.parentElement.parentElement.parentElement.id;
-        }
+        index = e.target.parentElement.parentElement.id;
         return index;
     }
 
@@ -138,6 +143,7 @@ class MemoryGame extends React.Component {
                 new_tiles[ii] = this.state.tiles[ii];
                 if (new_tiles[ii].value == this.state.tiles[index].value)
                 {
+                    new_tiles[ii].revealed = true;
                     new_tiles[ii].matched = true;
                 }
                 new_clicks = this.state.clicks + 1;
@@ -146,7 +152,6 @@ class MemoryGame extends React.Component {
             }
             console.log(this.state);
         } else {
-            // TODO reveal then after a delay, update the state and reset stuff
             var new_tiles = [];
             var new_clicks;
             for (var ii in this.state.tiles)
@@ -158,8 +163,24 @@ class MemoryGame extends React.Component {
             var new_state = {tiles: new_tiles, tile_revealed: this.state.tile_revealed, clicks: new_clicks};
             this.setState(new_state);
             console.log('wrong match');
-            //            sleep(1000); // delay
+            var x = setTimeout(this.flip_back, 1000);
+            return;
         }
+    }
+
+    flip_back() {
+        var new_tiles = [];
+        for (var ii in this.state.tiles)
+        {
+            new_tiles[ii] = this.state.tiles[ii];
+            if (!(new_tiles[ii].matched))
+                {
+                    new_tiles[ii].revealed = false;
+                }
+        }
+        var new_state = {tiles: new_tiles, tile_revealed: null, clicks: this.state.clicks};
+        this.setState(new_state);
+        console.log('flipped back');
     }
 
     // 1 liner to display the game_over message
@@ -209,6 +230,9 @@ class MemoryGame extends React.Component {
                     </div>)
             })
         return <div>
+            <div className='click'>
+            {this.state.clicks}
+            </div>
             <div className='row'>
             {row0}
             </div>
@@ -231,7 +255,6 @@ let Tile = (props) => {
                 <p>
                     {props.revealed && props.letter}
                 </p>
-                    <button>reveal</button>
                 
             </div>);
 }
