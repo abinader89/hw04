@@ -1,0 +1,30 @@
+/* This file is for your main application css. */
+
+@import "~milligram/dist/milligram";
+
+.tile > p {
+    padding-top: 10ex;
+    background-color: #4B0082;
+    text-align: center;
+}
+
+.button-black {
+    background-color: black;
+    color: white;
+}
+
+body {
+    background-color: #DA70D6;
+}
+
+h3 {
+    background-color: #800080;
+    color: white;
+    font-style: bold;
+}
+
+div {
+    display: inline-block;
+    margin: 5px;
+    display-text: center;
+}
