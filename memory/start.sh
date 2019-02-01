@@ -13,8 +13,5 @@ echo "Starting app..."
 #_build/prod/rel/memory/bin/memory start
 
 # Foreground for testing and for systemd
-_build/prod/rel/memory/bin/memory foreground
-
-# TODO: Add a cron rule or systemd service file
-#       to start your app on system boot.
+_build/prod/rel/memory/bin/memory start 
 
