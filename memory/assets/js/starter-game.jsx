@@ -47,29 +47,38 @@ function MakeTiles(list)
     var tile15 = new Tile(false, false, 'g');
     var tile16 = new Tile(false, false, 'h');
 
-    list.push(tile8);
-    list.push(tile5);
-    list.push(tile2);
-    list.push(tile12);
-    list.push(tile7);
-    list.push(tile3);
-    list.push(tile16);
-    list.push(tile9);
     list.push(tile1);
+    list.push(tile2);
+    list.push(tile3);
     list.push(tile4);
-    list.push(tile15);
+    list.push(tile5);
     list.push(tile6);
+    list.push(tile7);
+    list.push(tile8);
+    list.push(tile9);
     list.push(tile10);
     list.push(tile11);
-    list.push(tile13);
     list.push(tile12);
+    list.push(tile13);
+    list.push(tile14);
+    list.push(tile15);
+    list.push(tile16);
 
     return list;
 }
 
-// trivial one-liner to shuffle array
+//  shuffle my array
 function shuffle_array(arr) {
-    _.shuffle(arr);
+    for (var ii in arr)
+    {
+        let first = Math.floor(Math.random() * 16);
+        let second = Math.floor(Math.random() * 16);
+        let tmp = arr[first];
+
+        arr[first] = arr[second];
+        arr[second] = tmp;
+    }
+    return arr;
 }
 
 // App state for Memory Game is:
@@ -83,12 +92,12 @@ class MemoryGame extends React.Component {
         super(props);
         var list = [];
         MakeTiles(list);
-        shuffle_array(list);
+        list = shuffle_array(list);
         for (var ii in list)
         {
             console.log(list[ii].value.toString());
         }
-        this.state = {tiles: list, tile_revealed: null, clicks: 0};
+        this.state = {tiles: list, tile_revealed: null, clicks: 0, wait: false};
         this.flip_back=this.flip_back.bind(this);
     }
 
@@ -110,6 +119,10 @@ class MemoryGame extends React.Component {
     }
 
     reveal(e) {
+        if (this.state.wait)
+        {
+            return;
+        }
         var index = this.get_index(e);
         if (this.state.tiles[index].matched)
         {
@@ -128,7 +141,7 @@ class MemoryGame extends React.Component {
                 new_tiles[ii] = this.state.tiles[ii];
             }
             new_clicks = this.state.clicks + 1;
-            var new_state = {tiles: new_tiles, tile_revealed: new_tile_revealed, clicks: new_clicks};
+            var new_state = {tiles: new_tiles, tile_revealed: new_tile_revealed, clicks: new_clicks, wait: false};
             this.setState(new_state);
         } else if (this.state.tiles[index] === this.state.tile_revealed)
         {
@@ -147,7 +160,7 @@ class MemoryGame extends React.Component {
                     new_tiles[ii].matched = true;
                 }
                 new_clicks = this.state.clicks + 1;
-                var new_state = {tiles: new_tiles, tile_revealed: null, clicks: new_clicks};
+                var new_state = {tiles: new_tiles, tile_revealed: null, clicks: new_clicks, wait: false};
                 this.setState(new_state);
             }
             console.log(this.state);
@@ -160,7 +173,7 @@ class MemoryGame extends React.Component {
             }
             new_tiles[index].revealed = true;
             new_clicks = this.state.clicks + 1;
-            var new_state = {tiles: new_tiles, tile_revealed: this.state.tile_revealed, clicks: new_clicks};
+            var new_state = {tiles: new_tiles, tile_revealed: this.state.tile_revealed, clicks: new_clicks, wait: true};
             this.setState(new_state);
             console.log('wrong match');
             var x = setTimeout(this.flip_back, 1000);
@@ -178,14 +191,9 @@ class MemoryGame extends React.Component {
                     new_tiles[ii].revealed = false;
                 }
         }
-        var new_state = {tiles: new_tiles, tile_revealed: null, clicks: this.state.clicks};
+        var new_state = {tiles: new_tiles, tile_revealed: null, clicks: this.state.clicks, wait: false};
         this.setState(new_state);
         console.log('flipped back');
-    }
-
-    // 1 liner to display the game_over message
-    game_over() {
-        alert("Congratulations! You solved the Memory game!");
     }
 
     render() {
