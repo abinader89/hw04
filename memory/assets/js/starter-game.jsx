@@ -2,102 +2,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 
-export default function game_init(root) {
-    ReactDOM.render(<MemoryGame />, root);
-}
-
-// struct factory --
-// this function is used to make arbitrary maps,
-// this will be used to make tile structs since
-// they are dumb objects (no methods)
-function StructFactory(item_labels)
-{
-    var args = item_labels.split(' ');
-    var count = args.length;
-
-    // constructor for the struct
-    function constructor()
-    {
-        for (var ii = 0; ii < count; ++ii)
-        {
-            this[args[ii]] = arguments[ii];
-        }
-    }
-    return constructor;
-}
-
-function MakeTiles(list)
-{
-    var Tile = StructFactory('matched revealed value');
-
-    var tile1 = new Tile(false, false, 'a');
-    var tile2 = new Tile(false, false, 'b');
-    var tile3 = new Tile(false, false, 'c');
-    var tile4 = new Tile(false, false, 'd');
-    var tile5 = new Tile(false, false, 'e');
-    var tile6 = new Tile(false, false, 'f');
-    var tile7 = new Tile(false, false, 'g');
-    var tile8 = new Tile(false, false, 'h');
-    var tile9 = new Tile(false, false, 'a');
-    var tile10 = new Tile(false, false, 'b');
-    var tile11 = new Tile(false, false, 'c');
-    var tile12 = new Tile(false, false, 'd');
-    var tile13 = new Tile(false, false, 'e');
-    var tile14 = new Tile(false, false, 'f');
-    var tile15 = new Tile(false, false, 'g');
-    var tile16 = new Tile(false, false, 'h');
-
-    list.push(tile1);
-    list.push(tile2);
-    list.push(tile3);
-    list.push(tile4);
-    list.push(tile5);
-    list.push(tile6);
-    list.push(tile7);
-    list.push(tile8);
-    list.push(tile9);
-    list.push(tile10);
-    list.push(tile11);
-    list.push(tile12);
-    list.push(tile13);
-    list.push(tile14);
-    list.push(tile15);
-    list.push(tile16);
-
-    return list;
-}
-
-//  shuffle my array
-function shuffle_array(arr) {
-    for (var ii in arr)
-    {
-        let first = Math.floor(Math.random() * 16);
-        let second = Math.floor(Math.random() * 16);
-        let tmp = arr[first];
-
-        arr[first] = arr[second];
-        arr[second] = tmp;
-    }
-    return arr;
+export default function game_init(root, channel) {
+    ReactDOM.render(<MemoryGame channel={channel}/>, root);
 }
 
 // App state for Memory Game is:
-// tiles: array of 
-// tile_revealed: string
 // clicks: integer
+// wait: boolean
 
 class MemoryGame extends React.Component {
 
     constructor(props) {
         super(props);
-        var list = [];
-        MakeTiles(list);
-        list = shuffle_array(list);
-        for (var ii in list)
-        {
-            console.log(list[ii].value.toString());
-        }
-        this.state = {tiles: list, tile_revealed: null, clicks: 0, wait: false};
+        this.state = {clicks: 0, wait: false};
         this.flip_back=this.flip_back.bind(this);
     }
 
@@ -118,82 +35,19 @@ class MemoryGame extends React.Component {
         return index;
     }
 
-    reveal(e) {
+    got_view(view) {
+        console.log('new view: ', view);
+        this.setState(view.game);
+    }
+
+    click(e) {
         if (this.state.wait)
         {
             return;
         }
-        var index = this.get_index(e);
-        if (this.state.tiles[index].matched)
-        {
-            console.log('already matched');
-            return;
-        }
-        if (this.state.tile_revealed == null)
-        {
-            console.log(this.state);
-            var new_tiles = [];
-            var new_tile_revealed = this.state.tiles[index];
-            new_tile_revealed.revealed = true;
-            var new_clicks;
-            for (var ii in this.state.tiles)
-            {
-                new_tiles[ii] = this.state.tiles[ii];
-            }
-            new_clicks = this.state.clicks + 1;
-            var new_state = {tiles: new_tiles, tile_revealed: new_tile_revealed, clicks: new_clicks, wait: false};
-            this.setState(new_state);
-        } else if (this.state.tiles[index] === this.state.tile_revealed)
-        {
-            console.log('this is the exact same tile');
-            return;
-        } else if (this.state.tiles[index].value == this.state.tile_revealed.value)
-        {
-            var new_tiles = [];
-            var new_clicks;
-            for (var ii in this.state.tiles)
-            {
-                new_tiles[ii] = this.state.tiles[ii];
-                if (new_tiles[ii].value == this.state.tiles[index].value)
-                {
-                    new_tiles[ii].revealed = true;
-                    new_tiles[ii].matched = true;
-                }
-                new_clicks = this.state.clicks + 1;
-                var new_state = {tiles: new_tiles, tile_revealed: null, clicks: new_clicks, wait: false};
-                this.setState(new_state);
-            }
-            console.log(this.state);
-        } else {
-            var new_tiles = [];
-            var new_clicks;
-            for (var ii in this.state.tiles)
-            {
-                new_tiles[ii] = this.state.tiles[ii];
-            }
-            new_tiles[index].revealed = true;
-            new_clicks = this.state.clicks + 1;
-            var new_state = {tiles: new_tiles, tile_revealed: this.state.tile_revealed, clicks: new_clicks, wait: true};
-            this.setState(new_state);
-            console.log('wrong match');
-            var x = setTimeout(this.flip_back, 1000);
-            return;
-        }
-    }
-
-    flip_back() {
-        var new_tiles = [];
-        for (var ii in this.state.tiles)
-        {
-            new_tiles[ii] = this.state.tiles[ii];
-            if (!(new_tiles[ii].matched))
-                {
-                    new_tiles[ii].revealed = false;
-                }
-        }
-        var new_state = {tiles: new_tiles, tile_revealed: null, clicks: this.state.clicks, wait: false};
-        this.setState(new_state);
-        console.log('flipped back');
+        var index = get_index(e);
+        this.channel.push('guess', { idx: index })
+        .receive('ok', this.got_view.bind(this);
     }
 
     render() {
@@ -203,7 +57,7 @@ class MemoryGame extends React.Component {
                 return (
                     <div id={ii} key={ii}>
                         <Tile letter={tile.value}
-                              onClick={this.reveal.bind(this)}
+                              onClick={this.click.bind(this)}
                               revealed={tile.revealed} />
                     </div>)
             })
@@ -213,7 +67,7 @@ class MemoryGame extends React.Component {
                 return (
                     <div id={4+ii} key={4+ii}>
                         <Tile letter={tile.value}
-                              onClick={this.reveal.bind(this)}
+                              onClick={this.click.bind(this)}
                               revealed={tile.revealed} />
                     </div>)
             })
@@ -223,7 +77,7 @@ class MemoryGame extends React.Component {
                 return (
                     <div id={8+ii} key={8+ii}>
                         <Tile letter={tile.value}
-                              onClick={this.reveal.bind(this)}
+                              onClick={this.click.bind(this)}
                               revealed={tile.revealed} />
                     </div>)
             })
@@ -233,8 +87,7 @@ class MemoryGame extends React.Component {
                 return (
                     <div id={12+ii} key={12+ii}>
                         <Tile letter={tile.value}
-                              onClick={this.reveal.bind(this)}
-                              revealed={tile.revealed} />
+                              onClick={this.click.bind(this)}/>
                     </div>)
             })
         return <div>

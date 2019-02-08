@@ -10,7 +10,7 @@ Environment=MIX_ENV=prod "PORT=4791"
 Environment=LANG=en_US.UTF-8
 
 WorkingDirectory=/home/hw04/hw04/memory/
-ExecStart=/home/hw04/hw04/memory/start.sh
+ExecStart=/home/hw05/memory/start.sh
 
 [Install]
 WantedBy=multi-user.target
