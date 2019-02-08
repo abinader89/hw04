@@ -15,7 +15,6 @@ class MemoryGame extends React.Component {
     constructor(props) {
         super(props);
         this.state = {clicks: 0, wait: false};
-        this.flip_back=this.flip_back.bind(this);
     }
 
     // refresh the page with confirmation
